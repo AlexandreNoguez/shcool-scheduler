@@ -1,21 +1,10 @@
-'use client'
+"use client";
 import { useState } from "react";
-import ScheduleTable from "./components/ScheduleTable"
+import ScheduleTable from "./components/ScheduleTable";
 
 export default function Home() {
-  const [schedule, setSchedule] = useState([]);
-
-  const generateSchedule = async () => {
-    const response = await fetch("/api/schedule", {
-      method: "POST",
-    });
-    const data = await response.json();
-    if (data.success) {
-      setSchedule(data.schedule);
-    } else {
-      console.error("Error generating schedule:", data.message);
-    }
-  };
+  const [form, setForm] = useState();
+  console.log("entrei");
 
   return (
     <div className="container mx-auto p-4">
