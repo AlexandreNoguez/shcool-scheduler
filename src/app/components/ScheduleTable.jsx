@@ -214,7 +214,7 @@ const ScheduleTable = () => {
 
   return (
     <div className="p-6">
-      <div className="flex">
+      <div className="flex justify-between text-center">
         <div className="w-1/2">
           <form onSubmit={handleAddTeacher} className="mb-4 flex flex-col">
             <h2 className="text-xl font-bold mb-2">Adicionar Professores</h2>
@@ -254,13 +254,13 @@ const ScheduleTable = () => {
           </form>
 
           <form onSubmit={handleAddRoom} className="mb-4 flex flex-col">
-            <h2 className="text-xl font-bold mb-2">Adicionar Salas</h2>
+            <h2 className="text-xl font-bold mb-2">Adicionar Turmas</h2>
             <input
               type="text"
               name="room"
               value={inputFields.room}
               onChange={handleInputChange}
-              placeholder="Nome da Sala"
+              placeholder="Nome da Turma"
               className="px-4 py-2 border rounded mb-2"
             />
             <button
@@ -268,7 +268,7 @@ const ScheduleTable = () => {
               onClick={handleAddRoom}
               className="px-4 py-2 bg-blue-500 text-white rounded mb-4"
             >
-              Adicionar Sala
+              Adicionar Turma
             </button>
           </form>
 
@@ -293,29 +293,33 @@ const ScheduleTable = () => {
         </div>
 
         <div className="w-1/2">
-          <h2 className="text-xl font-bold mb-2">Professores Adicionados:</h2>
-          <ul className="list-disc list-inside mb-4">
-            {Object.keys(teachers).map((teacher) => (
-              <li key={teacher}>
-                {teacher} - {teachers[teacher].subject} (
-                {teachers[teacher].periods} períodos)
-              </li>
-            ))}
-          </ul>
-
-          <h2 className="text-xl font-bold mb-2">Salas Adicionadas:</h2>
-          <ul className="list-disc list-inside mb-4">
-            {rooms.map((room) => (
-              <li key={room}>{room}</li>
-            ))}
-          </ul>
-
-          <h2 className="text-xl font-bold mb-2">Matérias Adicionadas:</h2>
-          <ul className="list-disc list-inside mb-4">
-            {subjects.map((subject) => (
-              <li key={subject}>{subject}</li>
-            ))}
-          </ul>
+          <div className="h-40 overflow-y-auto">
+            <h2 className="text-xl font-bold mb-2">Professores Adicionados:</h2>
+            <ul className="list-disc list-inside mb-4">
+              {Object.keys(teachers).map((teacher) => (
+                <li key={teacher}>
+                  {teacher} - {teachers[teacher].subject} (
+                  {teachers[teacher].periods} períodos)
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="h-40 overflow-y-auto">
+            <h2 className="text-xl font-bold mb-2">Turmas Adicionadas:</h2>
+            <ul className="list-disc list-inside mb-4">
+              {rooms.map((room) => (
+                <li key={room}>{room}</li>
+              ))}
+            </ul>
+          </div>
+          <div className="h-40 overflow-y-auto">
+            <h2 className="text-xl font-bold mb-2">Matérias Adicionadas:</h2>
+            <ul className="list-disc list-inside mb-4">
+              {subjects.map((subject) => (
+                <li key={subject}>{subject}</li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
 
@@ -335,8 +339,8 @@ const ScheduleTable = () => {
           </button>
         )}
       </div>
-      
-        {scheduleData !== null && (
+
+      {scheduleData !== null && (
         <div id="scheduleTable" className="p-20 bg-white text-black">
           {rooms.map((room) => (
             <div key={room}>
