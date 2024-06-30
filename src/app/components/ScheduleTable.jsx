@@ -76,7 +76,6 @@ const ScheduleTable = () => {
   const [rooms, setRooms] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [scheduleData, setScheduleData] = useState(null);
-  const [currentPage, setCurrentPage] = useState(0);
   const [inputFields, setInputFields] = useState({
     teacherName: "",
     teacherSubject: "",
@@ -149,20 +148,6 @@ const ScheduleTable = () => {
     allocatePeriods(schedule, teachers, subjects);
     setScheduleData(schedule);
   };
-
-  const handleNextPage = () => {
-    if (currentPage < rooms.length - 1) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
-
-  const handlePrevPage = () => {
-    if (currentPage > 0) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const room = rooms[currentPage];
 
   const handleDownloadPDF = () => {
     const input = document.getElementById("scheduleTable");
@@ -271,145 +256,135 @@ const ScheduleTable = () => {
               Adicionar Matéria
             </button>
           </form>
-
-          <div className="mb-8 flex justify-center items-center">
-            <button
-              onClick={handleGenerateSchedule}
-              className="px-4 py-2 bg-green-500 text-white rounded"
-            >
-              Gerar Cronograma
-            </button>
-            {scheduleData && (
-              <button
-                onClick={handleDownloadPDF}
-                className="ml-4 px-4 py-2 bg-red-500 text-white rounded"
-              >
-                Baixar PDF
-              </button>
-            )}
-          </div>
         </div>
 
-        <div className="w-1/2 pl-4">
-          <div className="mb-4 h-40 overflow-y-scroll">
-            <h2 className="text-xl font-bold mb-2">Professores Adicionados</h2>
-            <ul className="list-disc pl-6">
-              {Object.keys(teachers).map((teacher) => (
-                <li key={teacher}>
-                  {teacher} - {teachers[teacher].subject} (
-                  {teachers[teacher].periods} períodos)
-                </li>
-              ))}
-            </ul>
-          </div>
+        <div className="w-1/2">
+          <h2 className="text-xl font-bold mb-2">Professores Adicionados:</h2>
+          <ul className="list-disc list-inside mb-4">
+            {Object.keys(teachers).map((teacher) => (
+              <li key={teacher}>
+                {teacher} - {teachers[teacher].subject} (
+                {teachers[teacher].periods} períodos)
+              </li>
+            ))}
+          </ul>
 
-          <div className="mb-4 h-40 overflow-y-scroll">
-            <h2 className="text-xl font-bold mb-2">Salas Adicionadas</h2>
-            <ul className="list-disc pl-6">
-              {rooms.map((room, index) => (
-                <li key={index}>{room}</li>
-              ))}
-            </ul>
-          </div>
+          <h2 className="text-xl font-bold mb-2">Salas Adicionadas:</h2>
+          <ul className="list-disc list-inside mb-4">
+            {rooms.map((room) => (
+              <li key={room}>{room}</li>
+            ))}
+          </ul>
 
-          <div className="mb-4 h-40 overflow-y-scroll">
-            <h2 className="text-xl font-bold mb-2">Matérias Adicionadas</h2>
-            <ul className="list-disc pl-6">
-              {subjects.map((subject, index) => (
-                <li key={index}>{subject}</li>
-              ))}
-            </ul>
-          </div>
+          <h2 className="text-xl font-bold mb-2">Matérias Adicionadas:</h2>
+          <ul className="list-disc list-inside mb-4">
+            {subjects.map((subject) => (
+              <li key={subject}>{subject}</li>
+            ))}
+          </ul>
         </div>
       </div>
 
+      <div className="mb-8 flex justify-center items-center">
+        <button
+          onClick={handleGenerateSchedule}
+          className="px-4 py-2 bg-green-500 text-white rounded"
+        >
+          Gerar Cronograma
+        </button>
+        {scheduleData && (
+          <button
+            onClick={handleDownloadPDF}
+            className="ml-4 px-4 py-2 bg-red-500 text-white rounded"
+          >
+            Baixar PDF
+          </button>
+        )}
+      </div>
+
       {scheduleData !== null && (
-        <div>
-          <div className="flex justify-between mb-4">
-            <button
-              onClick={handlePrevPage}
-              disabled={currentPage === 0}
-              className="px-4 py-2 bg-gray-300 rounded"
-            >
-              Anterior
-            </button>
-            <span className="text-xl font-bold">{room}</span>
-            <button
-              onClick={handleNextPage}
-              disabled={currentPage === rooms.length - 1}
-              className="px-4 py-2 bg-gray-300 rounded"
-            >
-              Próximo
-            </button>
-          </div>
-          <div id="scheduleTable" className="mb-8 text-black bg-white p-20">
-            {daysOfWeek.map((day) => (
-              <div key={day} className="mb-4">
-                <h3 className="text-xl font-semibold mb-2">{day}</h3>
-                <div className="flex flex-wrap -mx-2">
-                  <div className="w-full md:w-1/2 px-2">
-                    <h4 className="text-lg font-semibold mb-2">Manhã</h4>
-                    <table className="min-w-full border border-gray-200">
-                      <thead>
-                        <tr>
-                          <th className="py-2 px-4 border-b">Horário</th>
-                          <th className="py-2 px-4 border-b">Professor</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {periods.morning.length > 0 &&
-                          periods.morning.map((period, index) => (
-                            <tr key={index}>
-                              <td className="py-2 px-4 border-b">{period}</td>
-                              <td className="py-2 px-4 border-b">
-                                {scheduleData[room][day].morning[index]
-                                  ? `${
-                                      scheduleData[room][day].morning[index]
-                                    } - (${
-                                      teachers[
-                                        scheduleData[room][day].morning[index]
-                                      ].subject
-                                    })`
-                                  : "Livre"}
-                              </td>
-                            </tr>
-                          ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  <div className="w-full md:w-1/2 px-2">
-                    <h4 className="text-lg font-semibold mb-2">Tarde</h4>
-                    <table className="min-w-full border border-gray-200">
-                      <thead>
-                        <tr>
-                          <th className="py-2 px-4 border-b">Horário</th>
-                          <th className="py-2 px-4 border-b">Professor</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {periods.afternoon.map((period, index) => (
-                          <tr key={index}>
-                            <td className="py-2 px-4 border-b">{period}</td>
-                            <td className="py-2 px-4 border-b">
-                              {scheduleData[room][day].afternoon[index]
-                                ? `${
-                                    scheduleData[room][day].afternoon[index]
-                                  } - (${
-                                    teachers[
-                                      scheduleData[room][day].afternoon[index]
-                                    ].subject
-                                  })`
-                                : "Livre"}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
+        <div id="scheduleTable" className="p-20 bg-white text-black">
+          {rooms.map((room) => (
+            <div key={room}>
+              <div className="mb-4">
+                <span className="text-xl font-bold">Turma - {room}</span>
               </div>
-            ))}
-          </div>
+              <div className="mb-8">
+                {daysOfWeek.map((day) => (
+                  <div key={day} className="mb-4">
+                    <h3 className="text-xl font-semibold mb-2">{day}</h3>
+                    <div className="flex flex-wrap -mx-2">
+                      <div className="w-full md:w-1/2 px-2">
+                        <h4 className="text-lg font-semibold mb-2">Manhã</h4>
+                        <table className="min-w-full border border-gray-200">
+                          <thead>
+                            <tr>
+                              <th className="py-2 px-4 border-b">Horário</th>
+                              <th className="py-2 px-4 border-b">Professor</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {periods.morning.length > 0 &&
+                              periods.morning.map((period, index) => (
+                                <tr key={index}>
+                                  <td className="py-2 px-4 border-b">
+                                    {period}
+                                  </td>
+                                  <td className="py-2 px-4 border-b">
+                                    {scheduleData[room][day].morning[index]
+                                      ? `${
+                                          scheduleData[room][day].morning[index]
+                                        } - (${
+                                          teachers[
+                                            scheduleData[room][day].morning[
+                                              index
+                                            ]
+                                          ].subject
+                                        })`
+                                      : "Livre"}
+                                  </td>
+                                </tr>
+                              ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      <div className="w-full md:w-1/2 px-2">
+                        <h4 className="text-lg font-semibold mb-2">Tarde</h4>
+                        <table className="min-w-full border border-gray-200">
+                          <thead>
+                            <tr>
+                              <th className="py-2 px-4 border-b">Horário</th>
+                              <th className="py-2 px-4 border-b">Professor</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {periods.afternoon.map((period, index) => (
+                              <tr key={index}>
+                                <td className="py-2 px-4 border-b">{period}</td>
+                                <td className="py-2 px-4 border-b">
+                                  {scheduleData[room][day].afternoon[index]
+                                    ? `${
+                                        scheduleData[room][day].afternoon[index]
+                                      } - (${
+                                        teachers[
+                                          scheduleData[room][day].afternoon[
+                                            index
+                                          ]
+                                        ].subject
+                                      })`
+                                    : "Livre"}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>
