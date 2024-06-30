@@ -11,8 +11,10 @@
   "dependencies": {
     "html2canvas": "^1.4.1",
     "jspdf": "^2.5.1",
+    "jspdf-autotable": "^3.8.2",
     "mongoose": "^8.4.3",
     "next": "14.2.4",
+    "pdfmake": "^0.2.10",
     "react": "^18",
     "react-dom": "^18"
   },

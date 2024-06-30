@@ -1,7 +1,9 @@
 "use client";
 import React, { useState } from "react";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
+import pdfMake from "pdfmake/build/pdfmake";
+import pdfFonts from "pdfmake/build/vfs_fonts";
+
+pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 // Definindo os horários dos períodos
 const periods = {
@@ -84,12 +86,6 @@ const ScheduleTable = () => {
     subject: "",
   });
 
-  console.log("teachers", teachers);
-  console.log("rooms", rooms);
-  console.log("subjects", subjects);
-  console.log("scheduleData", scheduleData);
-  console.log("inputFields", inputFields);
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setInputFields({
@@ -150,32 +146,70 @@ const ScheduleTable = () => {
   };
 
   const handleDownloadPDF = () => {
-    const input = document.getElementById("scheduleTable");
-    html2canvas(input)
-      .then((canvas) => {
-        const imgData = canvas.toDataURL("image/png");
-        const pdf = new jsPDF("p", "mm", "a4");
-        const imgWidth = 210;
-        const pageHeight = 295;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        let heightLeft = imgHeight;
-        let position = 0;
+    const docDefinition = {
+      content: rooms.flatMap((room) => {
+        return daysOfWeek.flatMap((day) => {
+          return [
+            { text: `${day} - Turma ${room}`, style: "header" },
+            { text: "Manhã", style: "subheader" },
+            {
+              table: {
+                headerRows: 1,
+                widths: ["*", "*"],
+                body: [
+                  ["Horário", "Professor"],
+                  ...periods.morning.map((period, index) => [
+                    period,
+                    scheduleData[room][day].morning[index]
+                      ? `${scheduleData[room][day].morning[index]} - (${
+                          teachers[scheduleData[room][day].morning[index]]
+                            .subject
+                        })`
+                      : "Livre",
+                  ]),
+                ],
+              },
+              layout: "lightHorizontalLines",
+            },
+            { text: "Tarde", style: "subheader" },
+            {
+              table: {
+                headerRows: 1,
+                widths: ["*", "*"],
+                body: [
+                  ["Horário", "Professor"],
+                  ...periods.afternoon.map((period, index) => [
+                    period,
+                    scheduleData[room][day].afternoon[index]
+                      ? `${scheduleData[room][day].afternoon[index]} - (${
+                          teachers[scheduleData[room][day].afternoon[index]]
+                            .subject
+                        })`
+                      : "Livre",
+                  ]),
+                ],
+              },
+              layout: "lightHorizontalLines",
+            },
+            { text: "", margin: [0, 10] },
+          ];
+        });
+      }),
+      styles: {
+        header: {
+          fontSize: 16,
+          bold: true,
+          margin: [0, 10],
+        },
+        subheader: {
+          fontSize: 14,
+          margin: [0, 5],
+        },
+      },
+      pageMargins: [40, 60, 40, 60],
+    };
 
-        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-
-        while (heightLeft >= 0) {
-          position = heightLeft - imgHeight;
-          pdf.addPage();
-          pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-          heightLeft -= pageHeight;
-        }
-
-        pdf.save("schedule.pdf");
-      })
-      .catch((err) => {
-        console.error("Failed to generate PDF", err);
-      });
+    pdfMake.createPdf(docDefinition).download("schedule.pdf");
   };
 
   return (
@@ -301,8 +335,8 @@ const ScheduleTable = () => {
           </button>
         )}
       </div>
-
-      {scheduleData !== null && (
+      
+        {scheduleData !== null && (
         <div id="scheduleTable" className="p-20 bg-white text-black">
           {rooms.map((room) => (
             <div key={room}>
