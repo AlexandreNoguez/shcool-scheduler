@@ -24,14 +24,14 @@ const initializeSchedule = (rooms) => {
 
 const allocateSubject = (schedule, teachers, subject) => {
   let subjectTeachers = Object.keys(teachers).filter(
-    (teacher) => teachers[teacher] === subject
+    (teacher) => teachers[teacher].subject === subject
   );
 
   for (let teacher of subjectTeachers) {
-    let periodsPerTeacher = 4; // Cada professor terá 4 períodos
+    let periodsPerTeacher = teachers[teacher].periods; // Usando o valor de períodos definido para o professor
     let attempts = 0; // Limitar o número de tentativas para evitar loop infinito
 
-    while (periodsPerTeacher > 0 && attempts < 100) {
+    while (periodsPerTeacher > 0 && attempts < 1000) {
       let turn = periodsPerTeacher > 2 ? "afternoon" : "morning"; // Primeiro preenche 2 períodos da tarde
       let room =
         Object.keys(schedule)[
@@ -77,10 +77,11 @@ const ScheduleTable = () => {
   const [inputFields, setInputFields] = useState({
     teacherName: "",
     teacherSubject: "",
+    teacherPeriods: 0, // Adicionando campo para número de períodos
     room: "",
     subject: "",
   });
-console.log(scheduleData);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setInputFields({
@@ -93,9 +94,17 @@ console.log(scheduleData);
     e.preventDefault();
     setTeachers({
       ...teachers,
-      [inputFields.teacherName]: inputFields.teacherSubject,
+      [inputFields.teacherName]: {
+        subject: inputFields.teacherSubject,
+        periods: parseInt(inputFields.teacherPeriods, 10), // Salvando o número de períodos como número
+      },
     });
-    setInputFields({ ...inputFields, teacherName: "", teacherSubject: "" });
+    setInputFields({
+      ...inputFields,
+      teacherName: "",
+      teacherSubject: "",
+      teacherPeriods: 0,
+    });
   };
 
   const handleAddRoom = (e) => {
@@ -155,9 +164,17 @@ console.log(scheduleData);
               placeholder="Matéria"
               className="px-4 py-2 border rounded mb-2"
             />
+            <input
+              type="number"
+              name="teacherPeriods"
+              value={inputFields.teacherPeriods}
+              onChange={handleInputChange}
+              placeholder="Número de Períodos"
+              className="px-4 py-2 border rounded mb-2"
+            />
             <div>
               <button
-                type="button"
+                type="submit"
                 onClick={handleAddTeacher}
                 className="px-4 py-2 bg-blue-500 text-white rounded mb-4"
               >
@@ -177,7 +194,8 @@ console.log(scheduleData);
               className="px-4 py-2 border rounded mb-2"
             />
             <button
-              type="button"
+              type="submit"
+              onClick={handleAddRoom}
               className="px-4 py-2 bg-blue-500 text-white rounded mb-4"
             >
               Adicionar Sala
@@ -195,6 +213,7 @@ console.log(scheduleData);
               className="px-4 py-2 border rounded mb-2"
             />
             <button
+              type="submit"
               onClick={handleAddSubject}
               className="px-4 py-2 bg-blue-500 text-white rounded mb-4"
             >
@@ -218,7 +237,8 @@ console.log(scheduleData);
             <ul className="list-disc pl-6">
               {Object.keys(teachers).map((teacher) => (
                 <li key={teacher}>
-                  {teacher} - {teachers[teacher]}
+                  {teacher} - {teachers[teacher].subject} (
+                  {teachers[teacher].periods} períodos)
                 </li>
               ))}
             </ul>
@@ -270,7 +290,7 @@ console.log(scheduleData);
                 <div className="flex flex-wrap -mx-2">
                   <div className="w-full md:w-1/2 px-2">
                     <h4 className="text-lg font-semibold mb-2">Manhã</h4>
-                    <table className="min-w-full  border border-gray-200">
+                    <table className="min-w-full border border-gray-200">
                       <thead>
                         <tr>
                           <th className="py-2 px-4 border-b">Horário</th>
@@ -278,22 +298,20 @@ console.log(scheduleData);
                         </tr>
                       </thead>
                       <tbody>
-                        {console.log(periods.morning.length)}
                         {periods.morning.length > 0 &&
                           periods.morning.map((period, index) => (
                             <tr key={index}>
                               <td className="py-2 px-4 border-b">{period}</td>
                               <td className="py-2 px-4 border-b">
-                                {/* {console.log(
-                                  scheduleData[room][day]
-                                    ? scheduleData[room][day].morning[index]
-                                    : "",
-                                  "=========",
-                                  period
-                                )} */}
                                 {scheduleData[room][day].morning[index]
-                                  ? scheduleData[room][day].morning[index]
-                                  : "" || "Livre"}
+                                  ? `${
+                                      scheduleData[room][day].morning[index]
+                                    } - (${
+                                      teachers[
+                                        scheduleData[room][day].morning[index]
+                                      ].subject
+                                    })`
+                                  : "Livre"}
                               </td>
                             </tr>
                           ))}
@@ -302,7 +320,7 @@ console.log(scheduleData);
                   </div>
                   <div className="w-full md:w-1/2 px-2">
                     <h4 className="text-lg font-semibold mb-2">Tarde</h4>
-                    <table className="min-w-full  border border-gray-200">
+                    <table className="min-w-full border border-gray-200">
                       <thead>
                         <tr>
                           <th className="py-2 px-4 border-b">Horário</th>
@@ -314,8 +332,15 @@ console.log(scheduleData);
                           <tr key={index}>
                             <td className="py-2 px-4 border-b">{period}</td>
                             <td className="py-2 px-4 border-b">
-                              {scheduleData[room][day].afternoon[index] ||
-                                "Livre"}
+                              {scheduleData[room][day].afternoon[index]
+                                ? `${
+                                    scheduleData[room][day].afternoon[index]
+                                  } - (${
+                                    teachers[
+                                      scheduleData[room][day].afternoon[index]
+                                    ].subject
+                                  })`
+                                : "Livre"}
                             </td>
                           </tr>
                         ))}
