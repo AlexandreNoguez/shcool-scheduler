@@ -1,4 +1,7 @@
+"use client";
 import React, { useState } from "react";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 // Definindo os horários dos períodos
 const periods = {
@@ -82,6 +85,12 @@ const ScheduleTable = () => {
     subject: "",
   });
 
+  console.log("teachers", teachers);
+  console.log("rooms", rooms);
+  console.log("subjects", subjects);
+  console.log("scheduleData", scheduleData);
+  console.log("inputFields", inputFields);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setInputFields({
@@ -92,6 +101,13 @@ const ScheduleTable = () => {
 
   const handleAddTeacher = (e) => {
     e.preventDefault();
+    if (
+      !inputFields.teacherName ||
+      !inputFields.teacherPeriods ||
+      !inputFields.teacherSubject
+    ) {
+      return alert("Primeiro preencha para adicionar");
+    }
     setTeachers({
       ...teachers,
       [inputFields.teacherName]: {
@@ -109,18 +125,24 @@ const ScheduleTable = () => {
 
   const handleAddRoom = (e) => {
     e.preventDefault();
+    if (!inputFields.room) {
+      return alert("Primeiro preencha para adicionar");
+    }
     setRooms([...rooms, inputFields.room]);
     setInputFields({ ...inputFields, room: "" });
   };
 
   const handleAddSubject = (e) => {
     e.preventDefault();
+    if (!inputFields.subject) {
+      return alert("Primeiro preencha para adicionar");
+    }
     setSubjects([...subjects, inputFields.subject]);
     setInputFields({ ...inputFields, subject: "" });
   };
 
   const handleGenerateSchedule = () => {
-    if (!teachers || !rooms || !subjects) {
+    if (!rooms.length && !subjects.length) {
       return alert("Preencha os campos antes de gerar a grade horária");
     }
     const schedule = initializeSchedule(rooms);
@@ -141,6 +163,35 @@ const ScheduleTable = () => {
   };
 
   const room = rooms[currentPage];
+
+  const handleDownloadPDF = () => {
+    const input = document.getElementById("scheduleTable");
+    html2canvas(input)
+      .then((canvas) => {
+        const imgData = canvas.toDataURL("image/png");
+        const pdf = new jsPDF("p", "mm", "a4");
+        const imgWidth = 210;
+        const pageHeight = 295;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        let heightLeft = imgHeight;
+        let position = 0;
+
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+
+        while (heightLeft >= 0) {
+          position = heightLeft - imgHeight;
+          pdf.addPage();
+          pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+        }
+
+        pdf.save("schedule.pdf");
+      })
+      .catch((err) => {
+        console.error("Failed to generate PDF", err);
+      });
+  };
 
   return (
     <div className="p-6">
@@ -228,6 +279,14 @@ const ScheduleTable = () => {
             >
               Gerar Cronograma
             </button>
+            {scheduleData && (
+              <button
+                onClick={handleDownloadPDF}
+                className="ml-4 px-4 py-2 bg-red-500 text-white rounded"
+              >
+                Baixar PDF
+              </button>
+            )}
           </div>
         </div>
 
@@ -265,7 +324,7 @@ const ScheduleTable = () => {
       </div>
 
       {scheduleData !== null && (
-        <>
+        <div>
           <div className="flex justify-between mb-4">
             <button
               onClick={handlePrevPage}
@@ -283,7 +342,7 @@ const ScheduleTable = () => {
               Próximo
             </button>
           </div>
-          <div className="mb-8">
+          <div id="scheduleTable" className="mb-8 text-black bg-white p-20">
             {daysOfWeek.map((day) => (
               <div key={day} className="mb-4">
                 <h3 className="text-xl font-semibold mb-2">{day}</h3>
@@ -351,7 +410,7 @@ const ScheduleTable = () => {
               </div>
             ))}
           </div>
-        </>
+        </div>
       )}
     </div>
   );
